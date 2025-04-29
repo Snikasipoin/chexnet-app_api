@@ -16,7 +16,15 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-app = Flask(__name__)
+try:
+    print("🚀 Запускается Flask-приложение...")
+    app = Flask(__name__)
+    CORS(app, resources={r"/*": {"origins": "*"}})
+except Exception as e:
+    print("❌ Ошибка при инициализации Flask:")
+    print(e)
+    raise
+
 CORS(app)
 
 UPLOAD_FOLDER = 'static/uploads'
