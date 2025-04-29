@@ -1,7 +1,6 @@
-# wsgi.py
 print("⚙️ Импорт Flask-приложения...")
 
-from app import app  # Импортирует объект Flask
+from main import app  # <-- меняем app → main
 
 print("✅ Flask-приложение успешно импортировано")
 
