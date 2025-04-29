@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Анализ рентгеновских снимков</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        #result { margin-top: 20px; }
+        .image-container { display: inline-block; margin: 10px; vertical-align: top; }
+        img { max-width: 300px; border-radius: 10px; }
+        #interpretation, #gpt-diagnosis { white-space: pre-line; margin-top: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 10px; background: #f9f9f9; }
+    </style>
+</head>
+<body>
+    <h1>Анализ рентгеновских снимков</h1>
+    <form id="upload-form" enctype="multipart/form-data">
+        <input type="file" name="file" accept="image/*" required>
+        <button type="submit">Загрузить и обработать</button>
+    </form>
+    <div id="result">
+        <div class="image-container">
+            <h3>Исходное изображение</h3>
+            <img id="original-image" style="display: none;">
+        </div>
+        <div class="image-container">
+            <h3>Тепловая карта</h3>
+            <img id="heatmap-image" style="display: none;">
+        </div>
+        <div class="image-container">
+            <h3>График вероятностей</h3>
+            <img id="plot-image" style="display: none;">
+        </div>
+        <h3>Интерпретация модели</h3>
+        <p id="interpretation"></p>
+        <h3>Заключение врача (AI)</h3>
+        <p id="gpt-diagnosis"></p>
+    </div>
+
+    <script>
+        document.getElementById('upload-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    document.getElementById('original-image').src = data.original_url + '?t=' + new Date().getTime();
+                    document.getElementById('heatmap-image').src = data.heatmap_url + '?t=' + new Date().getTime();
+                    document.getElementById('plot-image').src = data.plot_url + '?t=' + new Date().getTime();
+
+                    document.getElementById('original-image').style.display = 'block';
+                    document.getElementById('heatmap-image').style.display = 'block';
+                    document.getElementById('plot-image').style.display = 'block';
+
+                    document.getElementById('interpretation').innerText = data.interpretation;
+                    document.getElementById('gpt-diagnosis').innerText = data.gpt_diagnosis;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Произошла ошибка при обработке.');
+            });
+        });
+    </script>
+</body>
+</html>

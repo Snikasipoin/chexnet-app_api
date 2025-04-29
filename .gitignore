@@ -1,0 +1,9 @@
+venv/
+__pycache__/
+dist/
+build/
+*.exe
+*.pkg
+*.log
+*.sqlite3
+.env
