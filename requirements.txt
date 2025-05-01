@@ -1,21 +1,12 @@
-# Совместимая и зафиксированная версия numpy
-numpy==1.21.1
-
-# Основные зависимости Flask-приложения
+numpy==1.21.2
 flask==2.0.1
 flask-cors==3.0.10
-gunicorn==20.1.0
-werkzeug==2.0.1
-
-# PyTorch и компьютерное зрение
 torch==2.3.0
 torchvision==0.18.0
-opencv-python==4.6.0.66   # обновлено, чтобы не тянуть numpy<1.20
+opencv-python==4.6.0.66
 pillow==10.2.0
 matplotlib==3.4.3
-
-# OpenAI API через OpenRouter
+werkzeug==2.0.1
+gunicorn==20.1.0
 openai==1.76.1
-
-# Работа с переменными окружения
 python-dotenv==1.0.1
