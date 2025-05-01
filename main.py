@@ -217,7 +217,7 @@ def upload_file():
         })
 
     except Exception as e:
-        print(f"Ошибка обработки запроса: {e}")
+        print(f"Ошибка обработки : {e}")
         return jsonify({"error": f"Ошибка обработки: {str(e)}"}), 500
 
 if __name__ == "__main__":
