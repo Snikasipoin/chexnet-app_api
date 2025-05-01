@@ -1,9 +1,4 @@
-print("⚙️ Импорт Flask-приложения...")
+from main import app  # если твой Flask-приложение в main.py
 
-try:
-    from main import app
-    print("✅ Flask-приложение успешно импортировано")
-except Exception as e:
-    print("❌ Ошибка при импорте Flask-приложения:")
-    print(e)
-    raise
+if __name__ == "__main__":
+    app.run()

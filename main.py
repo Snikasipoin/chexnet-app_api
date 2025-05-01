@@ -12,20 +12,14 @@ from werkzeug.utils import secure_filename
 import matplotlib.pyplot as plt
 from openai import OpenAI
 from dotenv import load_dotenv
+import requests
+from io import BytesIO
 
 # Load environment variables
 load_dotenv()
 
-try:
-    print("🚀 Запускается Flask-приложение...")
-    app = Flask(__name__)
-    CORS(app, resources={r"/*": {"origins": "*"}})
-except Exception as e:
-    print("❌ Ошибка при инициализации Flask:")
-    print(e)
-    raise
-
-CORS(app)
+app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 UPLOAD_FOLDER = 'static/uploads'
 RESULT_FOLDER = 'static/results'
@@ -35,7 +29,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(RESULT_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# OpenRouter OpenAI client
+# OpenRouter (DeepSeek) client
 openai_client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
     api_key=os.getenv("OPENROUTER_API_KEY")
@@ -184,12 +178,30 @@ def index():
 @app.route('/upload', methods=['POST'])
 def upload_file():
     try:
-        file = request.files['file']
-        if file.filename == '':
-            return jsonify({"error": "Файл не выбран."}), 400
-        filename = secure_filename(file.filename)
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(file_path)
+        if request.is_json:
+            data = request.get_json()
+            image_url = data.get('imageUrl')
+            if not image_url:
+                return jsonify({"error": "imageUrl не передан"}), 400
+
+            response = requests.get(image_url)
+            if response.status_code != 200:
+                return jsonify({"error": "Не удалось загрузить изображение"}), 400
+
+            filename = os.path.basename(image_url)
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            image = Image.open(BytesIO(response.content)).convert("RGB")
+            image.save(file_path)
+
+        elif 'file' in request.files:
+            file = request.files['file']
+            if file.filename == '':
+                return jsonify({"error": "Файл не выбран."}), 400
+            filename = secure_filename(file.filename)
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(file_path)
+        else:
+            return jsonify({"error": "Файл или imageUrl не передан."}), 400
 
         pred_class, original_path, heatmap_path, plot_path, probs = process_image(file_path)
         interpretation = interpret_result(pred_class, probs)
@@ -203,9 +215,11 @@ def upload_file():
             "interpretation": interpretation,
             "gpt_diagnosis": gpt_diagnosis
         })
+
     except Exception as e:
         print(f"Ошибка обработки запроса: {e}")
         return jsonify({"error": f"Ошибка обработки: {str(e)}"}), 500
 
 if __name__ == '__main__':
     app.run(debug=False, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+
